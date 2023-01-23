@@ -30,10 +30,9 @@ class YoutubeAudioExtractor:
         if concat_audio:
             self.concat_mp3_file()
 
-        # 저장 경로 확인
-        name_list = os.popen(f"find . -type f | grep -E '.mp3' > audio_list.txt").read()
+        # 음원 저장 경로 txt파일로 저장
+        os.popen(f"find . -type f | grep -E '.mp3' > audio_list.txt").read()
         
-
     def get_mp3_from_youtube(self):
         """입력된 유튜브 url에서 mp4 확장자를 가지는 음원을 추출하여 지정한 디렉토리에 저장합니다.
         pytube docs: https://pytube.io/en/latest/_modules/pytube/streams.html#Stream.download
@@ -62,7 +61,6 @@ class YoutubeAudioExtractor:
                     ffmpeg -i {save_file_path} {converted_file_path} -y &&
                     rm -f {save_file_path}
                     """).read() 
-
 
     def concat_mp3_file(self):
         """여러 mp3 파일을 concat합니다.
