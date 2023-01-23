@@ -172,4 +172,5 @@ test.py
 .gitmessage.txt
 audio_cache
 .DS_Store
+audio_list.txt
 # End of https://www.toptal.com/developers/gitignore/api/python
