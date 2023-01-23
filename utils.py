@@ -4,12 +4,26 @@ from tqdm import tqdm
 import re
 
 class YoutubeAudioExtractor:
+    """Youtube 링크를 리스트 형식으로 받으면 해당 링크에서 음원 추출
+
+    Args:
+        url_list (list): Youtube 링크를 리스트로 입력
+        output_path (str, optional): 추출한 음원 파일 저장 디렉토리명 지정. Defaults to './audio_cache'
+    """
 
     def __init__(self, url_list, output_path='./audio_cache'):
         self.url_list = url_list
         self.output_path = output_path
 
     def extract(self, concat_audio=False):
+        """Youtube 음원 추출 및 합치기
+
+        Args:
+            concat_audio (bool, optional): True 선택 시 추출된 mp3 파일을 하나로 합친다. Defaults to False.
+
+        Returns:
+            list: 추출한 mp3 파일의 경로를 리턴
+        """
 
         self.get_mp3_from_youtube()
 
@@ -27,20 +41,12 @@ class YoutubeAudioExtractor:
     def get_mp3_from_youtube(self):
         """입력된 유튜브 url에서 mp4 확장자를 가지는 음원을 추출하여 지정한 디렉토리에 저장합니다.
         pytube docs: https://pytube.io/en/latest/_modules/pytube/streams.html#Stream.download
-
-        Args:
-            url_list (list): 리스트형태로 다운받고자 하는 유튜브 링크 목록을 입력받습니다.
-            output_path (str, optional): 저장 디렉토리를 지정합니다. Defaults to './audio_cache'.
-            filename (_str, optional): 파일 이름을 지정합니다. None으로 설정 시 유튜브 제목이 설정됩니다. Defaults to None.
-        
-        Returns:
-            bool: True
         """
         
-        if not os.path.isdir(self.output_path): # 지정한 디렉토리가 없을 경우 생성
+        if not os.path.isdir(self.output_path): # 지정한 디렉토리가 없을 경우 신규 생성
             os.popen(f"mkdir {self.output_path}")
 
-        else:
+        else: # 기존 폴더 삭제 및 재생성
             os.popen(f"rm -rf {self.output_path} && mkdir {self.output_path}")
 
         for i, url in enumerate(tqdm(self.url_list)):
