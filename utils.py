@@ -31,11 +31,7 @@ class YoutubeAudioExtractor:
             self.concat_mp3_file()
 
         # 저장 경로 확인
-        name_list = os.popen(f"ls {self.output_path}| grep -iE '\.mp3'").read()
-        name_list = name_list.strip().split(sep='\n')
-        audio_path_list = [os.path.join(self.output_path, name) for name in name_list]
-
-        return audio_path_list
+        name_list = os.popen(f"ls {self.output_path}| grep -iE '\.mp3' > audio_list.txt").read()
         
 
     def get_mp3_from_youtube(self):
