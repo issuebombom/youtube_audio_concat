@@ -52,8 +52,8 @@ class YoutubeAudioExtractor:
 
             # convert mp4a to mp3
             prefix = str(i).rjust(3, '0') + '_'
-            title = re.sub(' ', '\\ ', youtube.title) # 한글 띄어쓰기 앞에 \ 넣기
-            title = re.sub('[()]', '', title) # cli에서 이해하지 못하는 괄호는 제외
+            title = re.sub('[^가-힣A-Za-z0-9\s]', '', youtube.title).strip() # 특수문자 제외
+            title = re.sub(' ', '\\ ', title) # 한글 띄어쓰기 앞에 \ 넣기
             save_file_path = os.path.join(self.output_path, 'extract_file.mp4')
             converted_file_path = os.path.join(self.output_path, prefix + title + '.mp3')
 
