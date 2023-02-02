@@ -20,9 +20,6 @@ class YoutubeAudioExtractor:
 
         Args:
             concat_audio (bool, optional): True 선택 시 추출된 mp3 파일을 하나로 합친다. Defaults to False.
-
-        Returns:
-            list: 추출한 mp3 파일의 경로를 리턴
         """
 
         self.get_mp3_from_youtube()
