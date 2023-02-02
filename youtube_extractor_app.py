@@ -7,6 +7,8 @@ st.markdown("""
 ##### 유튜브 링크를 입력하면 mp3 파일을 추출해 줍니다.
 """)
 
+visible = True
+
 # 링크 입력
 urls = st.text_area('Youtube 링크를 입력합니다. (Enter키를 통해 각 링크를 구분지어 입력합니다.)', )
 concat = st.checkbox('출력한 음원을 합치려면 체크하세요.')
@@ -34,3 +36,17 @@ audio_sample = st.selectbox(
     )
 # 샘플 오디오 플레이어
 st.audio(audio_sample, format='audio/mp3')
+
+if len(audio_path_list) != 0:
+    # 파일 이름(폴더명 제거)
+    file_name = audio_sample.split(sep='./audio_cache/')[-1]
+    # 다운로드버튼 활성화
+    visible = False
+
+# 오디오 다운로드
+with open(audio_sample, "rb") as file:
+    st.download_button(label='Download selected audio file', 
+                       mime='audio/mp3',
+                       data=file, 
+                       file_name=file_name, 
+                       disabled=visible) 
