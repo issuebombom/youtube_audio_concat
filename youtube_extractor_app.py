@@ -1,38 +1,55 @@
 import streamlit as st
 import os
-from main import main
+from utils import YoutubeAudioExtractor, player_and_download
 
 st.title('Youtube mp3 file extractor')
-st.markdown("""
-##### 유튜브 링크를 입력하면 mp3 파일을 추출해 줍니다.
-""")
+st.markdown("""##### 유튜브 링크를 입력하면 mp3 파일을 추출합니다.""")
 
-user_name = st.text_input(label='나만의 보관할 폴더명을 지정해주세요. 이미 존재할 경우 로딩합니다.', 
-                            max_chars=20,
-                            type="password")
+user_name = st.text_input(label='', 
+                          max_chars=20
+                          )
+
+if len(user_name) == 0:
+    st.info('사용자 이름을 입력해 주세요.', icon="ℹ️")
+    # st.warning('사용자 이름을 입력해 주세요.')
+    st.stop()
+
+st.markdown("""##### """) # empty space for layer
 
 # 링크 입력
-urls = st.text_area('Youtube 링크를 입력합니다. (Enter키를 통해 각 링크를 구분지어 입력합니다.)', )
-concat = st.checkbox('출력한 음원을 합치려면 체크하세요.')
+urls = st.text_area('링크를 입력합니다. (여러 개 입력 시 각 링크마다 엔터키를 눌러 줄바꿈 해주세요.)', )
+youtube = YoutubeAudioExtractor(urls, user_name)
 
 # 추출 시작 버튼
-if st.button('Run Extractor'):
-    main(urls=urls, user_name=user_name, concat=concat)
+if st.button('Extract', disabled=False if len(urls) != 0 else True):
+    youtube.extract()
 
-audio_list_path = os.path.join('userdata', user_name, 'audio_list.txt')
-if os.path.exists(audio_list_path):
-    with open(audio_list_path, 'r') as f:
-        read_txt = f.read()
+audio_text_path = os.path.join('userdata', user_name, 'audio_list.txt')
+if os.path.exists(audio_text_path):
+    with open(audio_text_path, 'r') as txt:
+        read_txt = txt.read()
         audio_list = read_txt.strip().split(sep='\n')
-        # 추출한 음원 리스트 보기
-        audio_name = st.selectbox("보유 중인 음원 리스트", audio_list)
-        audio_path = os.path.join('userdata', user_name, audio_name)
-        st.audio(audio_path, format='audio/mp3') # 샘플 오디오 플레이어
 
-        # 오디오 다운로드
-        with open(audio_path, "rb") as file:
-            st.download_button(label='Download selected audio file', 
-                            mime='audio/mp3',
-                            data=file, 
-                            file_name=audio_name, 
-                            )
+        st.markdown("""## """) # empty space for layer
+
+        # 추출한 음원 리스트 보기
+        audio_name = st.selectbox("저장된 음원 목록", audio_list)
+        audio_path = os.path.join('userdata', user_name, audio_name)
+
+        # 플레이어 및 다운로드 기능 생성
+        player_and_download(audio_path, audio_name)
+
+    st.markdown("""# """) # empty space for layer
+    st.markdown("""# """) # empty space for layer
+    
+    with st.expander("음원 합치기"):
+
+        concat_list = st.multiselect('합칠 음원을 순서대로 선택하세요.', audio_list)
+        file_name = st.text_input(label="저장할 파일명을 정해주세요.", 
+                                value="audio_output")
+        file_name += ".mp3"
+        if st.button('Concatenate'):
+            concat_audio_path = youtube.concat_mp3_file(concat_list, file_name)
+
+            # 플레이어 및 다운로드 기능 생성
+            player_and_download(concat_audio_path, file_name)
