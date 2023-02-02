@@ -1,14 +1,8 @@
 from utils import YoutubeAudioExtractor
+import os
 
-def main(url_list, concat=False):
-    '''
-    url_list = [
-        "https://youtu.be/YYOUHVJPukQ", 
-        "https://youtu.be/xTZHYA4Asi0",
-        "https://youtu.be/QM-vx1lrLaY"
-        ] # examples
-    '''
-    youtube = YoutubeAudioExtractor(url_list)
+def main(urls, user_name, concat=False):
+    youtube = YoutubeAudioExtractor(urls, user_name=user_name)
     youtube.extract(concat_audio=concat)
 
 if __name__ == '__main__':
