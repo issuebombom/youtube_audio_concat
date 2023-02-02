@@ -173,4 +173,5 @@ test.py
 audio_cache
 .DS_Store
 audio_list.txt
+userdata
 # End of https://www.toptal.com/developers/gitignore/api/python
