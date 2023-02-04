@@ -61,29 +61,53 @@ class YoutubeAudioExtractor:
         
         else: # 기존 폴더 삭제 후 재생성
             os.popen(f"rm -rf {concat_dir} && mkdir -p {concat_dir}").read()
-        
-        # 오디오 이름 앞에 디렉토리 문자열 추가 후 줄바꿈 문자열로 변경
-        with open(self.user_dir + '/' + 'concat_list.txt', 'w') as txt:
-            for name in concat_list:
-                txt.write(f"""file '{name}'\n""") # file을 입력하면 해당 파일이 있는 디렉토리가 불러진다.
 
         concat_audio_path = os.path.join(concat_dir, file_name)
+        concat_list_txt = os.path.join(self.user_dir, 'concat_list.txt') # concat 파일의 경로
+        
+        with open(concat_list_txt, 'w') as txt: # concat용 command text 작성
+            for name in concat_list:
+                txt.write(f"""file '{name}'\n""")
 
         os.popen(f"""
-                    ffmpeg -f concat -safe 0 -i {self.user_dir}/concat_list.txt -c copy {concat_audio_path} &&
-                    rm -f {self.user_dir}/concat_list.txt
+                    ffmpeg -f concat -safe 0 -i {concat_list_txt} -c copy {concat_audio_path} &&
+                    rm -f {concat_list_txt}
                 """).read()
-
+        
+        # NOTE: normalize 구현 고민
+        """normalize cmd
+        ffmpeg-normalize {} -o {} -f -v \
+        -c:a libmp3lame --normalization-type ebu --target-level -14 \
+        --keep-loudness-range-target &&
+        """
         return concat_audio_path
 
-def player_and_download(file_path, file_name='audio_output.mp3'):
+def player_and_download(user_dir, file_path, file_name):
     # 샘플 오디오 플레이어
     st.audio(file_path, format='audio/mp3')
 
     # 오디오 다운로드 버튼
     with open(file_path, "rb") as file:
-        st.download_button(label='Download', 
-                           mime='audio/mp3',
-                           data=file, 
-                           file_name=file_name
-                           )
+        st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
+    
+    # NOTE: 압축 후 다운로드 기능 구현 고민 (st.download버튼을 직접 클릭 외 실행하는 방법을 찾아야 함)
+    '''
+    if user_dir is not None:
+
+        st.button(on_click=zip_and_download)
+
+        def zip_and_download(user_dir):
+
+            os.popen(f"""zip audio.zip {user_dir}/*.mp3""").read() # 압축
+
+            zipfile_path = os.path.join(user_dir, 'audio.zip') # 압축파일 경로
+            with st.spinner('Wait for zip...'): # 압축파일 생성 전까지 대기
+                while True:
+                    if os.path.exists(zipfile_path):
+                        break
+                    time.sleep(0.5)
+
+            with open(zipfile_path, "rb") as zipfile:
+                st.download_button(label='Download all', data=zipfile, file_name='audio.zip')
+    '''
+

@@ -5,13 +5,12 @@ from utils import YoutubeAudioExtractor, player_and_download
 st.title('Youtube mp3 file extractor')
 st.markdown("""##### 유튜브 링크를 입력하면 mp3 파일을 추출합니다.""")
 
-user_name = st.text_input(label='', 
+user_name = st.text_input(label='사용자 이름 입력', 
                           max_chars=20
                           )
 
 if len(user_name) == 0:
     st.info('사용자 이름을 입력해 주세요.', icon="ℹ️")
-    # st.warning('사용자 이름을 입력해 주세요.')
     st.stop()
 
 st.markdown("""##### """) # empty space for layer
@@ -24,9 +23,11 @@ youtube = YoutubeAudioExtractor(urls, user_name)
 if st.button('Extract', disabled=False if len(urls) != 0 else True):
     youtube.extract()
 
-audio_text_path = os.path.join('userdata', user_name, 'audio_list.txt')
-if os.path.exists(audio_text_path):
-    with open(audio_text_path, 'r') as txt:
+user_dir = os.path.join('userdata', user_name)
+audio_txt_path = os.path.join(user_dir, 'audio_list.txt')
+
+if os.path.exists(audio_txt_path):
+    with open(audio_txt_path, 'r') as txt:
         read_txt = txt.read()
         audio_list = read_txt.strip().split(sep='\n')
 
@@ -34,10 +35,10 @@ if os.path.exists(audio_text_path):
 
         # 추출한 음원 리스트 보기
         audio_name = st.selectbox("저장된 음원 목록", audio_list)
-        audio_path = os.path.join('userdata', user_name, audio_name)
+        audio_path = os.path.join(user_dir, audio_name)
 
         # 플레이어 및 다운로드 기능 생성
-        player_and_download(audio_path, audio_name)
+        player_and_download(user_dir, audio_path, audio_name)
 
     st.markdown("""# """) # empty space for layer
     st.markdown("""# """) # empty space for layer
@@ -48,8 +49,9 @@ if os.path.exists(audio_text_path):
         file_name = st.text_input(label="저장할 파일명을 정해주세요.", 
                                 value="audio_output")
         file_name += ".mp3"
+        # normalize = st.checkbox('Normalize')
         if st.button('Concatenate'):
             concat_audio_path = youtube.concat_mp3_file(concat_list, file_name)
 
             # 플레이어 및 다운로드 기능 생성
-            player_and_download(concat_audio_path, file_name)
+            player_and_download(user_dir, concat_audio_path, file_name)
