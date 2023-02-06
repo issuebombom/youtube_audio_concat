@@ -1,5 +1,8 @@
 # Youtube Audio Extract and Concatenate
 하나 또는 여러 개의 유튜브 링크를 입력하면 해당 영상의 mp3 파일을 각각 추출하며 원할 경우 각 파일을 하나의 mp3 파일로 합쳐줍니다.  
+
+![reference_01](img/reference_img_01.png)
+![reference_02](img/reference_img_02.png)
 > 특징
 - streamlit 기반으로 사이트 디자인 및 작동
 - EC2, nginx, cloudflare 기반으로 배포
@@ -33,4 +36,3 @@ Main pip list
 - pytube==12.1.2
 - streamlit==1.17.0
 - tqdm==4.64.1
-
