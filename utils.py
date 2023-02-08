@@ -14,7 +14,7 @@ class YoutubeAudioExtractor:
 
     def __init__(self, urls, user_name):
         self.user_dir = os.path.join("userdata", user_name)
-        self.url_list = urls.split()
+        self.url_list = re.findall('http[a-zA-Z0-9:/.?=_\-]+', urls)
 
     def extract(self):
         """Youtube 음원 추출 및 폴더 내 음원 목록 저장
