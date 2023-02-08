@@ -1,5 +1,6 @@
 import os
 from pytube import YouTube
+import soundfile as sf
 from tqdm import tqdm
 import re
 import streamlit as st
@@ -122,3 +123,18 @@ def player_and_download(user_dir, file_path, file_name):
                 st.download_button(label='Download all', data=zipfile, file_name='audio.zip')
     '''
 
+def get_audio_length(file_path):
+    """get audio total length
+
+    Args:
+        file_path (str): audio file path
+
+    Returns:
+        int: 
+    """
+    
+    samplerate = sf.SoundFile(file_path).samplerate # extract samplerate
+    frames = sf.SoundFile(file_path).frames # extract audio frames
+    length = int(frames // samplerate) # switch audio frames to second length
+
+    return length
