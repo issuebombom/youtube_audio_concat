@@ -24,7 +24,7 @@ class YoutubeAudioExtractor:
 
         self.get_mp3_from_youtube()
         # 저장된 음원 목록 txt파일로 저장
-        os.popen(f"ls {self.user_dir} | grep -E '.mp3' > {os.path.join(self.user_dir, 'audio_list.txt')}").read()
+        os.popen(f"ls -tr {self.user_dir} | grep -E '.mp3' > {os.path.join(self.user_dir, 'audio_list.txt')}").read()
         
     def get_mp3_from_youtube(self):
         """입력된 유튜브 url에서 mp4 확장자를 가지는 음원을 추출하여 지정한 디렉토리에 저장합니다.
@@ -86,9 +86,13 @@ def player_and_download(user_dir, file_path, file_name):
     # 샘플 오디오 플레이어
     st.audio(file_path, format='audio/mp3')
 
-    # 오디오 다운로드 버튼
+    # 선택한 오디오 파일 읽기
     with open(file_path, "rb") as file:
+        # 오디오 다운로드 버튼
         st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
+        # 저장한 오디오 삭제
+        if st.button('Delete'):
+            os.popen(f"""rm '{file.name}'""").read()
     
     # NOTE: 압축 후 다운로드 기능 구현 고민 (st.download버튼을 직접 클릭 외 실행하는 방법을 찾아야 함)
     '''
