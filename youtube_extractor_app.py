@@ -44,7 +44,8 @@ if os.path.exists(audio_txt_path):
     st.markdown("""# """) # empty space for layer
     
     with st.expander("음원 합치기"):
-
+        
+        # NOTE: multiselect에서 중복 선택도 가능하도록 수정하면 좋겠음
         concat_list = st.multiselect('합칠 음원을 순서대로 선택하세요.', audio_list)
         file_name = st.text_input(label="저장할 파일명을 정해주세요.", 
                                 value="audio_output")
