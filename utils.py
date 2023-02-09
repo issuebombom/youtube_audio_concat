@@ -7,10 +7,6 @@ import streamlit as st
 
 class YoutubeAudioExtractor:
     """Youtube 링크를 리스트 형식으로 받으면 해당 링크에서 음원 추출
-
-    Args:
-        url_list (list): Youtube 링크를 리스트로 입력
-        user_dir (str, optional): 추출한 음원 파일 저장 디렉토리명 지정. Defaults to './audio_cache'
     """
 
     def __init__(self, urls, user_name):
@@ -140,6 +136,16 @@ class AudioEditor:
         os.popen(f"""
                     rm '{audio_path}'
                 """).read()
+        
+    def save_edit_audio(self, audio_name, save_name):
+        """편집한 음원을 사용자 폴더에 저장합니다.
+        """
+        extention = audio_name[audio_name.rfind('.'):]
+        edited_audio_path = os.path.join(self.cache_dir, audio_name)
+        save_file_path = os.path.join(self.user_dir, save_name+extention)
+
+        os.popen(f"""mv -f '{edited_audio_path}' '{save_file_path}'""").read()
+
 
 def audio_player(file_path, file_name):
     """오디오 플레이어를 생성합니다.
