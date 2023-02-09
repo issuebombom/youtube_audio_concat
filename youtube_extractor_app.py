@@ -59,7 +59,9 @@ if os.path.exists(user_dir):
     st.markdown("""# """) # empty space for layer
     
     with st.expander('음원 편집'):
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(['이름 변경', '음원 삭제', '음원 편집', '음원 합치기', '편집 음원 저장'])
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['이름 변경', '음원 삭제', 
+                                                '음원 편집', '페이드인/아웃', 
+                                                '음원 합치기', '편집 음원 저장'])
 
         with tab1:
             # 오디오 파일 이름 수정
@@ -102,6 +104,16 @@ if os.path.exists(user_dir):
                 audio_player(fade_audio_path, file_name)
 
         with tab4:
+            st.markdown(f'현재 선택된 파일은 :red[{audio_name}] 입니다.')
+            fade_type = st.radio('페이드 타입을 선택하세요.', ('in', 'out', 'edge'))
+            duration = st.number_input('페이드 길이를 입력하세요. (초)')
+            if st.button(f'Fade {fade_type}'):
+                fade_audio_path, file_name = editor.fade_audio(audio_path, audio_length, fade_type=fade_type, duration=duration, clean_cache=False)
+
+                # 플레이어 및 다운로드 기능 생성
+                audio_player(fade_audio_path, file_name)
+
+        with tab5:
             st.markdown(f':blue[*선택된 음원을 모두 합쳐줍니다.*]')
             # NOTE: multiselect에서 중복 선택도 가능하도록 수정하면 좋겠음
             concat_list = st.multiselect('음원을 순서대로 선택하세요.', audio_list)
@@ -112,7 +124,7 @@ if os.path.exists(user_dir):
                 # 플레이어 및 다운로드 기능 생성
                 audio_player(concat_audio_path, file_name)
 
-        with tab5:
+        with tab6:
             st.markdown(f':blue[*편집이 완료된 음원을 저장하면 음원 목록에서 볼 수 있습니다.*]')
             # cache 폴더 내 음원 목록 조회
             edited_audio_text = os.popen(f"""ls -tr '{user_cache_dir}' | grep -E '.mp3'""").read()
