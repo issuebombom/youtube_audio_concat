@@ -25,7 +25,7 @@ class YoutubeAudioExtractor:
 
         self.get_mp3_from_youtube()
         # 저장된 음원 목록 txt파일로 저장
-        os.popen(f"ls -tr {self.user_dir} | grep -E '.mp3' > {os.path.join(self.user_dir, 'audio_list.txt')}").read()
+        # os.popen(f"ls -tr {self.user_dir} | grep -E '.mp3' > {os.path.join(self.user_dir, 'audio_list.txt')}").read()
         
     def get_mp3_from_youtube(self):
         """입력된 유튜브 url에서 mp4 확장자를 가지는 음원을 추출하여 지정한 디렉토리에 저장합니다.
@@ -83,7 +83,10 @@ class YoutubeAudioExtractor:
         """
         return concat_audio_path
 
-def player_and_download(user_dir, file_path, file_name):
+def audio_player(user_dir, file_path, file_name, key):
+    """오디오 플레이어를 생성합니다.
+    """
+
     # 샘플 오디오 플레이어
     st.audio(file_path, format='audio/mp3')
 
@@ -95,11 +98,10 @@ def player_and_download(user_dir, file_path, file_name):
                 # 오디오 다운로드 버튼
                 st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
             with col2:
-                # 저장한 오디오 삭제 및 audil_list.txt 업데이트
-                if st.button('Delete'):
+                # 저장한 오디오 삭제
+                if st.button('Delete', key=key):
                     os.popen(f"""
-                                rm '{file.name}' &&
-                                ls -tr {user_dir} | grep -E '.mp3' > {os.path.join(user_dir, 'audio_list.txt')}
+                                rm '{file.name}'
                             """).read()
     
     # NOTE: 압축 후 다운로드 기능 구현 고민 (st.download버튼을 직접 클릭 외 실행하는 방법을 찾아야 함)
@@ -124,7 +126,7 @@ def player_and_download(user_dir, file_path, file_name):
     '''
 
 def get_audio_length(file_path):
-    """get audio total length
+    """오디오 총 길이를 확인합니다.
 
     Args:
         file_path (str): audio file path
@@ -135,6 +137,24 @@ def get_audio_length(file_path):
     
     samplerate = sf.SoundFile(file_path).samplerate # extract samplerate
     frames = sf.SoundFile(file_path).frames # extract audio frames
-    length = int(frames // samplerate) # switch audio frames to second length
+    length = int(round(frames / samplerate)) # switch audio frames to second length
 
     return length
+
+def get_audio_list(user_dir, txt_file_name='audio_list.txt'):
+    """사용자 폴더 내 mp3 파일을 탐색하여 audio_list.txt 파일에 기록합니다.
+    """
+
+    audio_txt_path = os.path.join(user_dir, txt_file_name)
+    os.popen(f"""ls -tr {user_dir} | grep -E '.mp3' > {audio_txt_path}""").read() # mp3 목록을 갱신합니다.
+
+    return audio_txt_path
+
+def rename(user_dir, audio_path, audio_name, switch_name):
+    """지정한 파일 이름을 수정합니다.
+    """
+
+    extention = audio_name[audio_name.rfind('.'):]
+    os.popen(f"""
+                mv '{audio_path}' '{os.path.join(user_dir, switch_name+extention)}'
+            """).read()
