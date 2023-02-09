@@ -18,7 +18,7 @@ if len(user_name) == 0:
 st.markdown("""##### """) # empty space for layer
 
 # 링크 입력
-urls = st.text_area('링크를 입력합니다. (여러 개 입력 시 각 링크마다 엔터키를 눌러 줄바꿈 해주세요.)', )
+urls = st.text_area('링크를 입력합니다.')
 youtube = YoutubeAudioExtractor(urls, user_name)
 
 # 추출 시작 버튼
@@ -119,10 +119,11 @@ if os.path.exists(user_dir):
             edited_audio_list = edited_audio_text.strip().split(sep='\n') # 리스트 변환
             selected_edited_audio_name = st.selectbox('저장할 파일을 선택하세요.', edited_audio_list)
             
-            # 플레이어 및 다운로드 기능 생성
-            edited_audio_path = os.path.join(user_cache_dir, selected_edited_audio_name)
-            audio_player(edited_audio_path, selected_edited_audio_name)
+            if len(selected_edited_audio_name) != 0:
+                # 플레이어 및 다운로드 기능 생성
+                edited_audio_path = os.path.join(user_cache_dir, selected_edited_audio_name)
+                audio_player(edited_audio_path, selected_edited_audio_name)
 
-            save_name = st.text_input('저장할 이름을 입력하세요.', 'edited_audio')
-            if st.button('Save'):
-                editor.save_edit_audio(selected_edited_audio_name, save_name)
+                save_name = st.text_input('저장할 이름을 입력하세요.', 'edited_audio')
+                if st.button('Save'):
+                    editor.save_edit_audio(selected_edited_audio_name, save_name)

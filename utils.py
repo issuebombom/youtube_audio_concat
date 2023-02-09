@@ -54,6 +54,9 @@ class AudioEditor:
         self.user_dir = user_dir
         self.cache_dir = os.path.join(self.user_dir, 'cache') # cache 폴더 경로 지정
 
+        if not os.path.exists(self.cache_dir): # cache 디렉토리가 없을 경우 신규 생성
+            os.popen(f"mkdir -p {self.cache_dir}")
+
     def clean_cache(self):
         """cache 폴더를 리셋합니다.
         """
@@ -109,7 +112,7 @@ class AudioEditor:
         if clean_cache:
             self.clean_cache()
 
-        file_name = '[Fade]output.mp3'
+        file_name = f'[Fade_{fade_type}]output.mp3'
         fade_audio_path = os.path.join(self.cache_dir, file_name)
 
         if fade_type == 'edge':
