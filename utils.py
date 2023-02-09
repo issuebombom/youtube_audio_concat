@@ -200,7 +200,7 @@ def get_audio_length(file_path):
 
     duration_infos = os.popen(f"""ffmpeg -i '{file_path}' 2>&1 | grep 'Duration'""").read()
     hour, minute, second = duration_infos.strip().split(sep=',')[0][-11:].split(sep=':')
-    length = int(hour) * 3600 + int(minute) * 60 + int(round(second))
+    length = int(hour) * 3600 + int(minute) * 60 + round(float(second))
 
     return length
 
