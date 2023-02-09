@@ -2,7 +2,7 @@ import streamlit as st
 import datetime as dt
 import time
 import os
-from utils import YoutubeAudioExtractor, audio_player, get_audio_list, get_audio_length, rename_audio, delete_audio, trim_audio, fade_audio
+from utils import YoutubeAudioExtractor, AudioEditor, audio_player, get_audio_list, get_audio_length
 
 st.title('Youtube mp3 file extractor')
 st.markdown("""##### 유튜브 링크를 입력하면 mp3 파일을 추출합니다.""")
@@ -45,12 +45,13 @@ if os.path.exists(user_dir):
                 get_audio_list(user_dir)
         
         # metadata
+        editor = AudioEditor(user_dir)
         audio_name = selected_audio_name
         audio_path = os.path.join(user_dir, audio_name)
         audio_length = get_audio_length(audio_path)
 
         # 플레이어 및 다운로드 기능 생성
-        audio_player(user_dir, audio_path, audio_name, 1)
+        audio_player(audio_path, audio_name)
 
     st.markdown("""# """) # empty space for layer
     st.markdown("""# """) # empty space for layer
@@ -66,27 +67,22 @@ if os.path.exists(user_dir):
                 switch_name = st.text_input('수정할 파일명을 적어주세요. ex) fixed_audio', label_visibility='collapsed')
             with col2:
                 if st.button('Rename'):
-                    rename_audio(user_dir, audio_path, audio_name, switch_name)
+                    editor.rename_audio(audio_path, audio_name, switch_name)
         with tab2:
             # NOTE: multiselect에서 중복 선택도 가능하도록 수정하면 좋겠음
             concat_list = st.multiselect('합칠 음원을 순서대로 선택하세요.', audio_list)
-            file_name = st.text_input(label="저장할 파일명을 정해주세요.", 
-                                    value="audio_output")
-            file_name += ".mp3"
             # normalize = st.checkbox('Normalize')
             if st.button('Concatenate'):
-                concat_audio_path = youtube.concat_mp3_file(concat_list, file_name)
+                concat_audio_path, file_name = editor.concat_mp3_file(concat_list)
 
                 # 플레이어 및 다운로드 기능 생성
-                audio_player(user_dir, concat_audio_path, file_name, 2)
+                audio_player(concat_audio_path, file_name)
         with tab3:
             st.markdown(f'현재 선택된 파일은 :red[{audio_name}] 입니다.')
             if st.button('Delete'):
-                delete_audio(audio_path)
+                editor.delete_audio(audio_path)
 
         with tab4:
-            temp_audio_path = os.path.join(user_dir, '[Temp]audio.mp3')
-            trim_audio_path = os.path.join(user_dir, '[Trim]'+audio_name)
             time_range = [str(dt.timedelta(seconds=seconds)) for seconds in range(audio_length+1)] # 0:00:00 형태로 출력
     
             # 최소 최대 시간 값 선택 바
@@ -97,16 +93,16 @@ if os.path.exists(user_dir):
             st.markdown(f"You seleted length between :red[{start_sec}] and :red[{end_sec}]")
             
             if st.button('Trim'):
-                if os.path.exists(temp_audio_path): # 임시파일이 있을 경우 우선 삭제합니다.
-                    os.popen(f"rm '{temp_audio_path}'").read()
-
-                # 편집된 파일을 임시파일명으로 저장합니다.
-                trim_audio(audio_path, start_sec, end_sec, temp_audio_path)
+                # Trim
+                trim_audio_path, _ = editor.trim_audio(audio_path, start_sec, end_sec)
 
                 while True: # Trim이 완료될 때 까지 대기
-                    if os.path.exists(temp_audio_path):
-                        temp_audio_length = get_audio_length(temp_audio_path)
+                    if os.path.exists(trim_audio_path):
+                        trim_audio_length = get_audio_length(trim_audio_path)
                         break
                     time.sleep(0.5)
                 # 임시파일 음원 양 끝단에 fade in/out처리 후 최종 저장합니다.
-                fade_audio(temp_audio_path, temp_audio_length, trim_audio_path, fade_type='edge', duration=0.05)
+                fade_audio_path, file_name = editor.fade_audio(trim_audio_path, trim_audio_length, fade_type='edge', duration=0.05, clean_cache=False)
+
+                # 플레이어 및 다운로드 기능 생성
+                audio_player(fade_audio_path, file_name)

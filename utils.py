@@ -51,20 +51,32 @@ class YoutubeAudioExtractor:
             
             my_bar.progress((i+1) * 100//len(self.url_list)) # 프로그래스 바
 
-    def concat_mp3_file(self, concat_list, file_name):
+class AudioEditor:
+
+    def __init__(self, user_dir):
+        self.user_dir = user_dir
+        self.cache_dir = os.path.join(self.user_dir, 'cache') # cache 폴더 경로 지정
+
+    def clean_cache(self):
+        """cache 폴더를 리셋합니다.
+        """
+
+        if not os.path.exists(self.cache_dir): # 지정한 디렉토리가 없을 경우 신규 생성
+            os.popen(f"mkdir -p {self.cache_dir}").read()
+        
+        else: # 기존 폴더 삭제 후 재생성
+            os.popen(f"rm -rf {self.cache_dir} && mkdir -p {self.cache_dir}").read()
+    
+    def concat_mp3_file(self, concat_list, clean_cache=True):
         """여러 mp3 파일을 concat합니다.
         """
 
-        concat_dir = os.path.join(self.user_dir, 'cache') # concat 폴더 경로 지정
+        if clean_cache:
+            self.clean_cache()
 
-        if not os.path.exists(concat_dir): # 지정한 디렉토리가 없을 경우 신규 생성
-            os.popen(f"mkdir -p {concat_dir}").read()
-        
-        else: # 기존 폴더 삭제 후 재생성
-            os.popen(f"rm -rf {concat_dir} && mkdir -p {concat_dir}").read()
-
-        concat_audio_path = os.path.join(concat_dir, file_name)
-        concat_list_txt = os.path.join(self.user_dir, 'concat_list.txt') # concat 파일의 경로
+        file_name = '[concat]output.mp3'
+        concat_audio_path = os.path.join(self.cache_dir, file_name)
+        concat_list_txt = os.path.join(self.user_dir, '[Temp]concat_list.txt') # concat 파일의 경로
         
         with open(concat_list_txt, 'w') as txt: # concat용 command text 작성
             for name in concat_list:
@@ -81,9 +93,55 @@ class YoutubeAudioExtractor:
         -c:a libmp3lame --normalization-type ebu --target-level -14 \
         --keep-loudness-range-target &&
         """
-        return concat_audio_path
+        return concat_audio_path, file_name
+        
+    def trim_audio(self, audio_path, start_sec, end_sec, clean_cache=True):
 
-def audio_player(user_dir, file_path, file_name, key):
+        if clean_cache:
+            self.clean_cache()
+
+        file_name = '[Trim]output.mp3'
+        trim_audio_path = os.path.join(self.cache_dir, file_name)
+
+        os.popen(f"""ffmpeg -i '{audio_path}' -ss {start_sec} -to {end_sec} -acodec copy '{trim_audio_path}' -y""").read()
+
+        return trim_audio_path, file_name
+
+    def fade_audio(self, audio_path, audio_length, fade_type='edge', duration=0.05, clean_cache=True):
+
+        if clean_cache:
+            self.clean_cache()
+
+        file_name = '[Fade]output.mp3'
+        fade_audio_path = os.path.join(self.cache_dir, file_name)
+
+        if fade_type == 'edge':
+            os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration},afade=t=out:st={audio_length-duration}:d={duration}" '{fade_audio_path}' -y""").read()
+        elif fade_type == 'in':
+            os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration}" '{fade_audio_path}' -y""").read()
+        elif fade_type == 'out':
+            os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=out:st={audio_length-duration}:d={duration}" '{fade_audio_path}' -y""").read()
+        
+        return fade_audio_path, file_name
+    
+    def rename_audio(self, audio_path, audio_name, switch_name):
+        """지정한 파일 이름을 수정합니다.
+        """
+
+        extention = audio_name[audio_name.rfind('.'):]
+        os.popen(f"""
+                    mv '{audio_path}' '{os.path.join(self.user_dir, switch_name+extention)}'
+                """).read()
+
+    def delete_audio(self, audio_path):
+        """지정한 파일을 삭제합니다.
+        """
+
+        os.popen(f"""
+                    rm '{audio_path}'
+                """).read()
+
+def audio_player(file_path, file_name):
     """오디오 플레이어를 생성합니다.
     """
 
@@ -140,31 +198,3 @@ def get_audio_list(user_dir, txt_file_name='audio_list.txt'):
     os.popen(f"""ls -tr {user_dir} | grep -E '.mp3' > {audio_txt_path}""").read() # mp3 목록을 갱신합니다.
 
     return audio_txt_path
-
-def rename_audio(user_dir, audio_path, audio_name, switch_name):
-    """지정한 파일 이름을 수정합니다.
-    """
-
-    extention = audio_name[audio_name.rfind('.'):]
-    os.popen(f"""
-                mv '{audio_path}' '{os.path.join(user_dir, switch_name+extention)}'
-            """).read()
-
-def delete_audio(audio_path):
-    """지정한 파일을 삭제합니다.
-    """
-    os.popen(f"""
-                rm '{audio_path}'
-            """).read()
-    
-def trim_audio(audio_path, start_sec, end_sec, save_path):
-
-    os.popen(f"""ffmpeg -i '{audio_path}' -ss {start_sec} -to {end_sec} -acodec copy '{save_path}' -y""").read()
-
-def fade_audio(audio_path, audio_length, save_path, fade_type='edge', duration=0.05):
-    if fade_type == 'edge':
-        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration},afade=t=out:st={audio_length-duration}:d={duration}" {save_path} -y""").read()
-    elif fade_type == 'in':
-        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration}" {save_path} -y""").read()
-    elif fade_type == 'out':
-        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=out:st={audio_length-duration}:d={duration}" {save_path} -y""").read()
