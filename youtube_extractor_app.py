@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from utils import YoutubeAudioExtractor, audio_player, get_audio_list, rename
+from utils import YoutubeAudioExtractor, audio_player, get_audio_list, rename_audio, delete_audio
 
 st.title('Youtube mp3 file extractor')
 st.markdown("""##### 유튜브 링크를 입력하면 mp3 파일을 추출합니다.""")
@@ -50,7 +50,7 @@ if os.path.exists(user_dir):
     st.markdown("""# """) # empty space for layer
     
     with st.expander('음원 편집'):
-        tab1, tab2 = st.tabs(['이름 변경', '음원 합치기'])
+        tab1, tab2, tab3 = st.tabs(['이름 변경', '음원 합치기', '음원 삭제'])
 
         with tab1:
             # 오디오 파일 이름 수정
@@ -60,9 +60,8 @@ if os.path.exists(user_dir):
                 switch_name = st.text_input('수정할 파일명을 적어주세요. ex) fixed_audio', label_visibility='collapsed')
             with col2:
                 if st.button('Rename'):
-                    rename(user_dir, audio_path, audio_name, switch_name)
+                    rename_audio(user_dir, audio_path, audio_name, switch_name)
         with tab2:
-            
             # NOTE: multiselect에서 중복 선택도 가능하도록 수정하면 좋겠음
             concat_list = st.multiselect('합칠 음원을 순서대로 선택하세요.', audio_list)
             file_name = st.text_input(label="저장할 파일명을 정해주세요.", 
@@ -74,3 +73,7 @@ if os.path.exists(user_dir):
 
                 # 플레이어 및 다운로드 기능 생성
                 audio_player(user_dir, concat_audio_path, file_name, 2)
+        with tab3:
+            st.markdown(f'현재 선택된 파일은 :red[{audio_name}] 입니다.')
+            if st.button('Delete'):
+                delete_audio(audio_path)

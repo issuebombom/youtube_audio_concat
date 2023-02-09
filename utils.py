@@ -92,17 +92,8 @@ def audio_player(user_dir, file_path, file_name, key):
 
     # 선택한 오디오 파일 읽기
     with open(file_path, "rb") as file:
-        with st.container():
-            col1, col2 = st.columns([1.4, 8])
-            with col1:
-                # 오디오 다운로드 버튼
-                st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
-            with col2:
-                # 저장한 오디오 삭제
-                if st.button('Delete', key=key):
-                    os.popen(f"""
-                                rm '{file.name}'
-                            """).read()
+        # 오디오 다운로드 버튼
+        st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
     
     # NOTE: 압축 후 다운로드 기능 구현 고민 (st.download버튼을 직접 클릭 외 실행하는 방법을 찾아야 함)
     '''
@@ -150,11 +141,18 @@ def get_audio_list(user_dir, txt_file_name='audio_list.txt'):
 
     return audio_txt_path
 
-def rename(user_dir, audio_path, audio_name, switch_name):
+def rename_audio(user_dir, audio_path, audio_name, switch_name):
     """지정한 파일 이름을 수정합니다.
     """
 
     extention = audio_name[audio_name.rfind('.'):]
     os.popen(f"""
                 mv '{audio_path}' '{os.path.join(user_dir, switch_name+extention)}'
+            """).read()
+
+def delete_audio(audio_path):
+    """지정한 파일을 삭제합니다.
+    """
+    os.popen(f"""
+                rm '{audio_path}'
             """).read()
