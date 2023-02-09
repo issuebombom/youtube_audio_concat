@@ -1,4 +1,5 @@
 import os
+import random
 from pytube import YouTube
 import soundfile as sf
 from tqdm import tqdm
@@ -150,14 +151,14 @@ class AudioEditor:
 def audio_player(file_path, file_name):
     """오디오 플레이어를 생성합니다.
     """
-
+    random_key = random.randint(1, 1e06)
     # 샘플 오디오 플레이어
     st.audio(file_path, format='audio/mp3')
 
     # 선택한 오디오 파일 읽기
     with open(file_path, "rb") as file:
         # 오디오 다운로드 버튼
-        st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name)
+        st.download_button(label='Download', mime='audio/mp3', data=file, file_name=file_name, key=random_key)
     
     # NOTE: 압축 후 다운로드 기능 구현 고민 (st.download버튼을 직접 클릭 외 실행하는 방법을 찾아야 함)
     '''
