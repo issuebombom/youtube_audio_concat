@@ -1,7 +1,6 @@
 import os
 import random
 from pytube import YouTube
-import datetime as dt
 from tqdm import tqdm
 import re
 import streamlit as st
@@ -200,9 +199,8 @@ def get_audio_length(file_path):
     # length = int(round(frames / samplerate)) # switch audio frames to second length
 
     duration_infos = os.popen(f"""ffmpeg -i '{file_path}' 2>&1 | grep 'Duration'""").read()
-    str_duration = duration_infos.strip().split(sep=',')[0][-11:-3]
-    dt_duration = dt.datetime.strptime(str_duration, "%H:%M:%S")
-    length = dt_duration.hour * 3600 + dt_duration.minute * 60 + dt_duration.second
+    hour, minute, second = duration_infos.strip().split(sep=',')[0][-11:].split(sep=':')
+    length = int(hour) * 3600 + int(minute) * 60 + int(round(second))
 
     return length
 
