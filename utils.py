@@ -20,6 +20,7 @@ class YoutubeAudioExtractor:
             os.popen(f"mkdir -p {self.user_dir}")
 
         self.get_mp3_from_youtube()
+
         # 저장된 음원 목록 txt파일로 저장
         # os.popen(f"ls -tr {self.user_dir} | grep -E '.mp3' > {os.path.join(self.user_dir, 'audio_list.txt')}").read()
         
@@ -29,7 +30,6 @@ class YoutubeAudioExtractor:
         """
         my_bar = st.progress(0)
         for i, url in enumerate(tqdm(self.url_list)):
-            
             youtube = YouTube(url)
             condition = youtube.streams.filter(only_audio=True, file_extension='mp4', type='audio', abr='128kbps').order_by('abr').last()
             condition.download(output_path=self.user_dir, filename='extract_file.mp4') # 다운로드가 완료되면 다음 line을 실행하는 것 확인
@@ -46,7 +46,7 @@ class YoutubeAudioExtractor:
                     """).read()
             
             my_bar.progress((i+1) * 100//len(self.url_list)) # 프로그래스 바
-
+    
 class AudioEditor:
 
     def __init__(self, user_dir):
@@ -86,15 +86,11 @@ class AudioEditor:
                     rm -f {concat_list_txt}
                 """).read()
         
-        # NOTE: normalize 구현 고민
-        """normalize cmd
-        ffmpeg-normalize {} -o {} -f -v \
-        -c:a libmp3lame --normalization-type ebu --target-level -14 \
-        --keep-loudness-range-target &&
-        """
         return concat_audio_path, file_name
         
     def trim_audio(self, audio_path, start_sec, end_sec, clean_cache=True):
+        """오디오 자르기
+        """
 
         if clean_cache:
             self.clean_cache()
@@ -107,6 +103,8 @@ class AudioEditor:
         return trim_audio_path, file_name
 
     def fade_audio(self, audio_path, audio_length, fade_type='edge', duration=0.05, clean_cache=True):
+        """오디오 페이드인/아웃
+        """
 
         if clean_cache:
             self.clean_cache()
@@ -123,6 +121,22 @@ class AudioEditor:
         
         return fade_audio_path, file_name
     
+    def normalize_audio(self, audio_path, target_level=-14, clean_cache=True):
+        """오디오 노멀라이즈
+        """
+
+        if clean_cache:
+            self.clean_cache()
+
+        file_name = '[Norm]output.mp3'
+        norm_audio_path = os.path.join(self.cache_dir, file_name)
+
+        os.popen(f"""ffmpeg-normalize '{audio_path}' -o '{norm_audio_path}' -f -v \
+            -c:a libmp3lame --normalization-type ebu --target-level {target_level} \
+            --keep-loudness-range-target --true-peak -0.2""").read()
+
+        return norm_audio_path, file_name
+        
     def rename_audio(self, audio_path, audio_name, switch_name):
         """지정한 파일 이름을 수정합니다.
         """
