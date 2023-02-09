@@ -55,7 +55,7 @@ class YoutubeAudioExtractor:
         """여러 mp3 파일을 concat합니다.
         """
 
-        concat_dir = os.path.join(self.user_dir, 'concat_cache') # concat 폴더 경로 지정
+        concat_dir = os.path.join(self.user_dir, 'cache') # concat 폴더 경로 지정
 
         if not os.path.exists(concat_dir): # 지정한 디렉토리가 없을 경우 신규 생성
             os.popen(f"mkdir -p {concat_dir}").read()
@@ -156,3 +156,15 @@ def delete_audio(audio_path):
     os.popen(f"""
                 rm '{audio_path}'
             """).read()
+    
+def trim_audio(audio_path, start_sec, end_sec, save_path):
+
+    os.popen(f"""ffmpeg -i '{audio_path}' -ss {start_sec} -to {end_sec} -acodec copy '{save_path}' -y""").read()
+
+def fade_audio(audio_path, audio_length, save_path, fade_type='edge', duration=0.05):
+    if fade_type == 'edge':
+        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration},afade=t=out:st={audio_length-duration}:d={duration}" {save_path} -y""").read()
+    elif fade_type == 'in':
+        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=in:st=0:d={duration}" {save_path} -y""").read()
+    elif fade_type == 'out':
+        os.popen(f"""ffmpeg -i '{audio_path}' -af "afade=t=out:st={audio_length-duration}:d={duration}" {save_path} -y""").read()
