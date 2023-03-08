@@ -2,7 +2,7 @@ import streamlit as st
 import datetime as dt
 import time
 import os
-from utils import YoutubeAudioExtractor, AudioEditor, audio_player, get_audio_list, get_audio_length
+from utils import YoutubeAudioExtractor, AudioEditor, audio_player, get_audio_list, get_audio_length, speech_to_text
 
 st.title('Youtube mp3 file extractor')
 st.markdown("""##### 유튜브 링크를 입력하면 mp3 파일을 추출합니다.""")
@@ -156,3 +156,36 @@ if os.path.exists(user_dir):
                 save_name = st.text_input('저장할 이름을 입력하세요.', 'edited_audio')
                 if st.button('Save'):
                     editor.save_edit_audio(selected_edited_audio_name, save_name)
+
+    st.markdown("""# """) # empty space for layer
+
+    with st.expander('텍스트 추출'):
+        st.markdown(f':blue[*스피치 음원에서만 괜찮은 성능을 보여줍니다.* (*보통 20sec/min 정도의 시간이 소요됩니다.*)]')
+        st.markdown(f'현재 선택된 파일은 :red[{audio_name}] 입니다.')
+        
+        translate_langunge = None
+        translate = st.checkbox('translate')
+
+        if translate:
+            lang = st.radio(" ", ('영/한', '한/영'), label_visibility='collapsed')
+
+            if lang == '영/한':
+                translate_langunge = ['en', 'ko']
+            else:
+                translate_langunge = ['ko', 'en']
+
+        # NOTE: 소요시간 추가 필요
+        if st.button('Start'):
+            with st.spinner('Wait for it...'):
+                script = speech_to_text(audio_path, translate, translate_langunge)
+            
+            csv = script.to_csv(index=False).encode('utf-8')
+            st.download_button("Download to CSV",
+                            data=csv,
+                            file_name="my_script.csv",
+                            mime="text/csv",
+                            key='download-csv'
+            )
+            st.dataframe(script.style.format(precision=2), use_container_width=True)
+
+

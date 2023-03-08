@@ -1,9 +1,14 @@
 import os
 import random
-from pytube import YouTube
-from tqdm import tqdm
+import requests
+import json
 import re
+from collections import defaultdict
+import pandas as pd
+from tqdm import tqdm
+from pytube import YouTube
 import streamlit as st
+import whisper
 
 class YoutubeAudioExtractor:
     """Youtube 링크를 리스트 형식으로 받으면 해당 링크에서 음원 추출
@@ -226,3 +231,50 @@ def get_audio_list(user_dir, txt_file_name='audio_list.txt'):
     os.popen(f"""ls -tr {user_dir} | grep -E '.mp3' > {audio_txt_path}""").read() # mp3 목록을 갱신합니다.
 
     return audio_txt_path
+
+def translator(msg, source="en", target="ko"):
+    """language translator
+    """
+
+    # NOTE: must hide!!
+    NAVER_CLIENT_ID, NAVER_CLIENT_SECRET = "SVCGtFyH3qnVSiSiEmNc", "WDzQ2fwcyl"
+
+    # Make Request Datas
+    url = "https://openapi.naver.com/v1/papago/n2mt"
+    headers = {
+    "Content-Type": "application/json",
+    "X-Naver-Client-Id": NAVER_CLIENT_ID,
+    "X-Naver-Client-Secret": NAVER_CLIENT_SECRET
+    }
+    params = {"source": source, "target": target, "text": msg}
+
+    # request(korean text) > response(english text)
+    response = requests.post(url, json.dumps(params), headers=headers)
+
+    # return english text
+    return response.json()["message"]["result"]["translatedText"]
+
+def speech_to_text(file_path, translate=False, translate_language=None):
+    """extract text from audio
+
+    Args:
+        file_path (str): audio file path
+
+    Returns:
+        pandas.DataFrame: text script
+    """
+
+    model = whisper.load_model("base")
+    result = model.transcribe(file_path, verbose=False)
+    script_info = defaultdict(list)
+
+    for segment in result['segments']:
+        script_info['start'].append(segment['start'])
+        script_info['end'].append(segment['end'])
+        script_info['text'].append(segment['text'])
+        if translate:
+            script_info['translate'].append(translator(segment['text'], source=translate_language[0], target=translate_language[1]))
+
+    script_info_df = pd.DataFrame(script_info).round(2)
+
+    return script_info_df
