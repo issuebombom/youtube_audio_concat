@@ -1,8 +1,16 @@
-# Youtube Audio Extract and Concatenate
-하나 또는 여러 개의 유튜브 링크를 입력하면 해당 영상의 mp3 파일을 각각 추출하며 원할 경우 각 파일을 하나의 mp3 파일로 합쳐줍니다.  
+# Youtube Audio Extractor
+유튜브 링크를 입력하면 해당 영상의 mp3 파일을 각각 추출 및 편집을 지원합니다.
+
 
 ![reference_01](img/reference_img_01.png)
-![reference_02](img/reference_img_02.png)
+![reference_03](img/reference_img_03.png)
+
+> New Feat
+- 음원 페이드인/아웃 기능 추가
+- whisper를 적용한 STT 기능 추가
+- 파파고 API를 적용한 번역 기능 추가 (API kEY 필요)
+
+
 > 특징
 - streamlit 기반으로 사이트 디자인 및 작동
 - EC2, nginx, cloudflare 기반으로 배포
@@ -19,15 +27,13 @@
     - crontab을 활용한 정기적인 파일 제거
 
 > 진행 예정(목표)
-- 음원 노멀라이즈 기능
 - 파일 다운로드 시 압축 후 다운로드 기능
-- 구간 설정 및 해당 구간의 음원만 추출 기능 (완)
-- STT(Speech to Text) 구현 및 구간별 정보 제공
 - 유튜브 검색 기능 (가능 여부 확인 필요)
 - CRUD 구현을 통한 유저 정보 관리
 - 로그인 기능 (streamlit-authenticator or 장고 기반)
-- 파일 추가
-- 파일 삭제 (완)
+- 구간 설정 및 해당 구간의 음원만 추출 기능 (완)
+- 음원 노멀라이즈 기능 (완)
+- STT(Speech to Text) 구현 및 구간별 정보 제공 (완)
 ## Requirements
 Python 3.8.16  
 FFMPEG
@@ -37,4 +43,3 @@ FFMPEG
 Main pip list
 - pytube==12.1.2
 - streamlit==1.17.0
-- tqdm==4.64.1
