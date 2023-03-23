@@ -163,7 +163,7 @@ if os.path.exists(user_dir):
         st.markdown(f':blue[*스피치 음원에서만 괜찮은 성능을 보여줍니다.* (*보통 20sec/min 정도의 시간이 소요됩니다.*)]')
         st.markdown(f'현재 선택된 파일은 :red[{audio_name}] 입니다.')
         
-        translate_langunge = None
+        translate_language = None
         translate = st.checkbox('translate')
 
         if translate:
@@ -177,7 +177,7 @@ if os.path.exists(user_dir):
         # NOTE: 소요시간 추가 필요
         if st.button('Start'):
             with st.spinner('Wait for it...'):
-                script = speech_to_text(audio_path, translate, translate_langunge)
+                script = speech_to_text(audio_path, translate, translate_language)
             
             csv = script.to_csv(index=False).encode('utf-8')
             st.download_button("Download to CSV",

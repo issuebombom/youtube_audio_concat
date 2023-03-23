@@ -237,7 +237,7 @@ def translator(msg, source="en", target="ko"):
     """
 
     # NOTE: must hide!!
-    NAVER_CLIENT_ID, NAVER_CLIENT_SECRET = "SVCGtFyH3qnVSiSiEmNc", "WDzQ2fwcyl"
+    NAVER_CLIENT_ID, NAVER_CLIENT_SECRET = "", ""
 
     # Make Request Datas
     url = "https://openapi.naver.com/v1/papago/n2mt"
